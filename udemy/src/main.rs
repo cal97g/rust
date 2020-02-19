@@ -1,5 +1,8 @@
 // control flows
 use std::fmt;
+use std::mem;
+
+mod pm;
 
 fn age_check(age: i32) {
     if age >= 18 {
@@ -118,7 +121,7 @@ fn unions() {
     let val = unsafe { my_union.i };
     println!("Val {}", val);
 
-    // we can also pattern match against unions; though returning clojures as a result (which is a nice pattern)
+    // we can also pattern match against unions; though returning closures as a result (which is a nice pattern)
     // is hacky af. See: https://github.com/rust-lang/rust/issues/24036#issuecomment-89509870
 
     fn match_u(x : MassiveSaving) {
@@ -156,11 +159,139 @@ fn an_option() {
             None => {println!("y is None!")}
         }
     }
-    
+
     process_y(y);
     y = None;
     process_y(y);
 
+}
+
+fn arrays() {
+    // Prefer &str as a function parameter or if you want a read-only view of a string;
+    // Perfer String when you want to own and mutate a string.
+    // https://www.ameyalokare.com/rust/2017/10/12/rust-str-vs-String.html
+    // you can't resize an array, like C / C++ right; use a vector for that.
+    let mut people:[&str;4] = ["David", "Daniel", "Arthur", "Thomas"];
+    println!("{}", &people[1].len());
+
+    people[3] = "Tara";
+    println!("{}", &people[3]);
+
+    for indx in 0..people.len() {
+        println!("{}", &people[indx]);
+    }
+
+    println!("size of people array: {}", mem::size_of_val(&people));
+
+    let matrix : [[u8;4]; 4] = [
+        [0, 1, 2, 3],
+        [0, 1, 2, 3],
+        [0, 1, 2, 3],
+        [0, 1, 2, 3]
+    ];
+}
+
+fn vectors() {
+    let mut somelist = Vec::new();
+    somelist.push(1);
+    somelist.push(123);
+    somelist.push(333);
+
+    // must only be of one type
+    // somelist.push("str");
+
+   match somelist.get(100) {
+       Some(val) => println!("{} Index 100 exists!", val),
+       None => println!("somelist does not have index 100!")
+   }
+
+   // it also has the general methods you would expect. I'll just check the docs.
+    println!("Vector: {:?}", somelist);
+}
+
+fn strings() {
+    // come back to this probably though text data is not my primary motivation for learning rust
+
+    let a = "hello"; // &str = `string slice` ?
+
+    // iterate over characters
+    for c in a.chars() {
+        println!("{}", c)
+    }
+
+    // 'index' as you would usually think of it
+    if let Some(first_char) = a.chars().nth(0) {
+        println!("first_char is {}", first_char);
+    }
+
+    // String - heap allocated construct
+    let mut letters = String::new();
+    let mut a = 'a' as u8;
+    while a <= ('z' as u8) {
+        letters.push(a as char);
+        a += 1;
+    }
+
+    let mymessage = String::from("Short Virgin Galactic");
+
+    println!("{}", mymessage);
+    println!("{}", letters);
+
+
+    // make str from String
+    let alphabet:&str = &letters;
+    print!("{}", alphabet);
+
+    // you can do stuff like .replace on Strings
+}
+
+// this returns a tuple
+fn sum_and_product(x:i32, y:i32) -> (i32, i32) {
+    (x+y, x*y)
+}
+
+// tuples do not have to maintain the same type
+fn tuples() {
+    // the compiler presumably sees that I pass these to sum_and_product later and uses this information
+    // to determine that the types are i32
+    let x = 32;
+    let y = -23;
+
+    let sp = sum_and_product(x, y);
+    println!("{0} + {1} = {2} - {0} * {1} = {3}", x, y,  sp.0, sp.1);
+
+    // destructuring
+    let (a,b) = sp;
+    println!("{0}, {1}", a, b);
+
+    // nesting
+    let sp2 = sum_and_product(4, 7);
+    let combined = (sp, sp2);
+    let ((c, d), (e, f)) = combined;
+
+    println!("{0}, {1}, {2}, {3}", c, d, e, f);
+}
+
+fn hashmaps() {
+    // presumably they work exactly like hasmaps everywhere
+}
+
+fn closures() {
+
+    let increment = | x : u8| x + 1;
+    let mut i : u8 = 0;
+
+    for _ in 1..=100 {
+        i = increment(i);
+    }
+
+    let _increment_annotated = |i: i32| -> i32 { i + 1 };
+
+    println!("Closures!! i ends as {}", i);
+
+    let noargs = || "it's better than no arms..";
+
+    println!("{}", noargs());
 
 }
 
@@ -171,5 +302,11 @@ fn main() {
     structures();
     unions();
     an_option();
-
+    arrays();
+    vectors();
+    strings();
+    tuples();
+    hashmaps();
+    pm::patternmatching();
+    closures();
 }
